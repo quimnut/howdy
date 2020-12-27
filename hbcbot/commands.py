@@ -72,3 +72,72 @@ def hydro_adj(args):
         # not passed numbers
         return usage
     
+def untappd(args):
+    import os
+    import requests
+    import json
+    client_id = os.environ["UNTAPPD_CLIENT_ID"]
+    client_secret = os.environ["UNTAPPD_CLIENT_SECRET"]
+
+    usage = 'Usage: .untappd <brewery name> <beer name>'
+    url = 'https://api.untappd.com/v4'
+    user_agent = 'homebrew.chat (' + client_id + ')'
+    headers = {'User-Agent': user_agent}
+
+    query = " ".join(args)
+  
+    try:
+        sres = requests.get(url + '/search/beer', params={'client_id': client_id, 'client_secret': client_secret, 'q': query}, headers=headers)
+        sjson = sres.json()
+        bid = sjson['response']['beers']['items'][0]['beer']['bid']
+    
+    except Exception:
+        # could not find a beer
+        return usage
+    
+    try:
+        bres = requests.get(url + '/beer/info/' + str(bid), params={'client_id': client_id, 'client_secret': client_secret}, headers=headers)
+        bjson = bres.json()
+        heading = '*' + bjson['response']['beer']['brewery']['brewery_name'] + ' ' +  bjson['response']['beer']['beer_name'] + '*'
+        rating = '*Average Rating*\n' + str(round(bjson['response']['beer']['rating_score'], 2)) + ' from ' + str(bjson['response']['beer']['rating_count']) + ' opinions'
+        text = heading + '\n' + rating
+        desc_text = '*Style:* ' + bjson['response']['beer']['beer_style'] + '\n'
+        desc_text += '*IBU:* ' + str(bjson['response']['beer']['beer_ibu']) + '    ' + '*ABV:* ' + str(round(bjson['response']['beer']['beer_abv'], 1)) + '\n'
+        desc_text += bjson['response']['beer']['beer_description']
+        blocks = json.dumps([{
+                   "type": "section",
+                   "text": {
+                     "type": "mrkdwn",
+                     "text": heading
+                   }
+                 },
+                 {
+                   "type": "section",
+                   "block_id": "section567",
+                   "text": {
+                     "type": "mrkdwn",
+                     "text": desc_text
+                   },
+                   "accessory": {
+                     "type": "image",
+                     "image_url":   bjson['response']['beer']['beer_label'],
+                     "alt_text": "Beer label image"
+                   }
+                 },
+                 {
+                   "type": "section",
+                   "block_id": "section789",
+                   "fields": [
+                     {
+                       "type": "mrkdwn",
+                       "text": rating
+                     }
+                   ]
+                 }])
+        response = { 'text': text, 'blocks': blocks }
+        return(response)
+       
+    except Exception as err:
+        # w t f indeed
+        return usage
+

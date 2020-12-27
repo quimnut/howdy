@@ -32,13 +32,14 @@ else:
 
 
 def print_help(args):
-    return('commands: .abv .brix .hydrometer')
+    return('commands: .abv .brix .hydrometer .untappd')
 
 
 command_map = {
     'abv': commands.calc_abv,
     'brix': commands.brix_sg,
     'hydrometer': commands.hydro_adj,
+    'untappd': commands.untappd,
     'help': print_help,
 }
 
@@ -65,8 +66,14 @@ def handle_message(event_data):
         if not cmd:
             return
         response = cmd(args)
-        slack_client.chat_postMessage(channel=channel, text=response)
-
+        if isinstance(response, str):
+            # text only response
+            slack_client.chat_postMessage(channel=channel, text=response)
+        elif isinstance(response, dict):
+            # text and other object such as formatting blocks
+            # loose checking here only untappd command will return a dict
+            slack_client.chat_postMessage(channel=channel, text=response['text'], blocks=response['blocks'])
+ 
 
 @slack_events_adapter.on("member_joined_channel")
 def handle_join(event_data):
