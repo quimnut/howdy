@@ -136,9 +136,10 @@ def untappd(args):
                    ]
                  }])
         response = { 'text': text, 'blocks': blocks }
-        return(response)
        
     except Exception as err:
         # w t f indeed
         return usage
+
+    return(response)
 
