@@ -17,7 +17,7 @@ services:
       # Lagoon Labels
       lagoon.type: python-ckandatapusher
     ports:
-            - 8800:8800
+            - 8800
     environment:
       - SLACK_SIGNING_SECRET
       - SLACK_BOT_TOKEN
