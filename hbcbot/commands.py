@@ -1,3 +1,7 @@
+import os
+import requests
+import json
+
 def _abv(og, fg):
     return (76.08 * (og - fg) / (1.775 - og)) * (fg / 0.794)
 
@@ -73,9 +77,6 @@ def hydro_adj(args):
         return usage
     
 def untappd(args):
-    import os
-    import requests
-    import json
     client_id = os.environ["UNTAPPD_CLIENT_ID"]
     client_secret = os.environ["UNTAPPD_CLIENT_SECRET"]
 
